@@ -169,6 +169,12 @@ class EsQueryset(QuerySet):
                 elif operator == 'not':
                     filtr = {'bool': {'must_not': [{'term': {field_name: value}}]}}
 
+                elif operator == 'in':
+                    filtr = {'bool': {'must': [{'terms': {field_name: value}}]}}
+
+                elif operator == 'not_in':
+                    filtr = {'bool': {'must_not': [{'terms': {field_name: value}}]}}
+
                 elif operator == 'should':
                     filtr = {'bool': {operator: [{'term': {field_name: value}}]}}
 
@@ -195,7 +201,7 @@ class EsQueryset(QuerySet):
             body['query'] = {'bool': search}
         else:
             body = search
-
+        
         return body
 
     @property
@@ -320,7 +326,7 @@ class EsQueryset(QuerySet):
         return clone
 
     def sanitize_lookup(self, lookup):
-        valid_operators = ['exact', 'not', 'should', 'range', 'gt', 'lt', 'gte', 'lte', 'contains', 'isnull']
+        valid_operators = ['exact', 'not', 'should', 'range', 'gt', 'lt', 'gte', 'lte', 'contains', 'isnull', 'in', 'not_in']
         words = lookup.split('__')
         fields = [word for word in words if word not in valid_operators]
         # this is also django's default lookup type
@@ -341,8 +347,8 @@ class EsQueryset(QuerySet):
                 filters['{0}__not'.format(field)] = value
             elif operator == 'not':
                 filters[field] = value
-            elif operator in ['gt', 'gte', 'lt', 'lte']:
-                inverse_map = {'gt': 'lte', 'gte': 'lt', 'lt': 'gte', 'lte': 'gt'}
+            elif operator in ['gt', 'gte', 'lt', 'lte', 'in', 'not_in']:
+                inverse_map = {'gt': 'lte', 'gte': 'lt', 'lt': 'gte', 'lte': 'gt', 'in': 'not_in', 'not_in': 'in'}
                 filters['{0}__{1}'.format(field, inverse_map[operator])] = value
             elif operator == 'isnull':
                 filters[lookup] = not value
