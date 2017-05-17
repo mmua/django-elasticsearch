@@ -140,6 +140,8 @@ class EsQueryset(QuerySet):
 
         if self.filters:
             # TODO: should we add _cache = true ?!
+            search['must'] = search['query']
+            del(search['query'])
             search['filter'] = {}
             mapping = self.model.es.get_mapping()
 
@@ -190,7 +192,7 @@ class EsQueryset(QuerySet):
 
                 nested_update(search['filter'], filtr)
 
-            body['query'] = {'filtered': search}
+            body['query'] = {'bool': search}
         else:
             body = search
 
