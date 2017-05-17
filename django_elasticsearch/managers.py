@@ -349,4 +349,3 @@ class ElasticsearchManager():
         es_client.indices.delete(index=self.index,
                                          ignore=404)
         self.create_index()
-        self.reindex_all()
